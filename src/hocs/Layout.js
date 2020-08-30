@@ -1,0 +1,14 @@
+import React, { Component } from "react";
+import Navbar from "../components/Navbar";
+class Layout extends Component {
+  render() {
+    return (
+      <div>
+        <Navbar branding="E Med Hub" />
+        {this.props.children}
+      </div>
+    );
+  }
+}
+
+export default Layout;
