@@ -4,7 +4,7 @@ class Layout extends Component {
   render() {
     return (
       <div>
-        <Navbar branding="E Med Hub" />
+        <Navbar branding="E MedHub" />
         {this.props.children}
       </div>
     );

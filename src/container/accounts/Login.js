@@ -1,3 +1,5 @@
+import { Helmet } from "react-helmet";
+
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
@@ -21,7 +23,6 @@ class Login extends Component {
       return;
     }
     if (password === "") {
-      console.log("password");
       this.setState({ errors: { password: "Password is required" } });
       return;
     }
@@ -44,45 +45,73 @@ class Login extends Component {
   onChange = (e) => this.setState({ [e.target.name]: e.target.value });
 
   render() {
+    if (localStorage.getItem("isAuthenticated") === "true") {
+      this.props.history.push("/");
+    }
     const { email, password, errors } = this.state;
+    document.body.style.background =
+      "url('https://previews.123rf.com/images/redspruce/redspruce1506/redspruce150600031/40901625-seamless-health-care-and-medicine-doodle-background.jpg') no-repeat center center/cover";
 
     return (
-      <div className="card mb-3">
-        <div className="card-header bg-dark text-white">Add Contact</div>
-        <div className="card-body">
-          <form onSubmit={this.onSubmit}>
-            <TextInputGroup
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="Enter Email..."
-              value={email}
-              onChange={this.onChange}
-              error={errors.email}
-            />
-            <TextInputGroup
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="Enter Password..."
-              value={password}
-              onChange={this.onChange}
-              error={errors.password}
-            />
+      <React.Fragment>
+        <Helmet>
+          <title>Login | E-MEDHUB</title>
+          <meta name="description" content="login" />
+        </Helmet>
+        <div
+          className="container d-flex justify-content-center align-items-center"
+          style={{ height: "90vh" }}
+        >
+          <div
+            className="card mb-3 shadow border border-dark"
+            style={{ width: "60vh" }}
+          >
+            <div
+              className="card-header text-center bg-dark font-weight-bold text-white"
+              style={{ fontSize: "1rem" }}
+            >
+              Login
+            </div>
+            <div className="card-body">
+              <form onSubmit={this.onSubmit}>
+                <TextInputGroup
+                  label="Email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter Email..."
+                  value={email}
+                  onChange={this.onChange}
+                  error={errors.email}
+                />
+                <TextInputGroup
+                  label="Password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter Password..."
+                  value={password}
+                  onChange={this.onChange}
+                  error={errors.password}
+                />
 
-            <input type="submit" value="SignUp" className="btn btn-block" />
-          </form>
-          <div className="d-flex flex-row justify-content-between text-light">
-            <Link to="/signup" className=" btn btn-secondary shadow px-3">
-              <i className="fas fa-question" /> SignUp
-            </Link>
+                <input
+                  type="submit"
+                  value="Login"
+                  className="btn btn-primary btn-block"
+                />
+              </form>
+              <div className="d-flex flex-row justify-content-between text-light pt-4">
+                <Link to="/signup" className=" btn btn-dark shadow ">
+                  SignUp
+                </Link>
 
-            <Link to="/reset" className="btn btn-secondary shadow px-3">
-              <i className="fas fa-question" /> Reset
-            </Link>
+                <Link to="/reset" className="btn btn-dark shadow ">
+                  Reset
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }

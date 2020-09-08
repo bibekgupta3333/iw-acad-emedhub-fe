@@ -1,8 +1,12 @@
 import { combineReducers } from "redux";
-// import alert from "./alert";
+import store from "./store.js";
 import auth from "./auth";
+import order from "./order";
+import alert from "./alert";
 
 export default combineReducers({
-  // alert,
+  store,
+  alert,
   auth,
+  order,
 });

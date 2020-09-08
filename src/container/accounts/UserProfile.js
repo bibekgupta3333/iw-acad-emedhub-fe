@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import TextInputGroup from "../../hocs/TextInputGroups";
 import { connect } from "react-redux";
+import { Helmet } from "react-helmet";
 import { get_profile, update_profile } from "../../actions/auth";
 class UserProfile extends Component {
   state = {
@@ -16,12 +17,16 @@ class UserProfile extends Component {
 
   UNSAFE_componentWillReceiveProps(nextProps, nextState) {
     const { phone, photo, address, bio } = nextProps.auth.profile;
-    const { username, email } = nextProps.auth.profile.user;
+
     // console.log(email, "frontend");
     // console.log(nextProps.auth.profile);
     this.setState({
-      username,
-      email,
+      username: nextProps.auth.profile.user
+        ? nextProps.auth.profile.user.username
+        : this.componentDidMount(),
+      email: nextProps.auth.profile.user
+        ? nextProps.auth.profile.user.email
+        : "",
       phone,
       address,
       photo,
@@ -29,8 +34,20 @@ class UserProfile extends Component {
     });
   }
   componentDidMount() {
-    const { id } = this.props.match.params;
-    this.props.get_profile(id);
+    if (
+      localStorage.getItem("isAuthenticated") === "true" &&
+      localStorage.getItem("is_buyer") === "true"
+    ) {
+      const { id } = this.props.match.params;
+      if (localStorage.getItem("id") == id) {
+        this.props.get_profile(id);
+      } else {
+        this.props.history.push("/");
+        this.props.setAlert("this is not your profile", "danger");
+      }
+    } else {
+      this.props.history.push("/");
+    }
   }
 
   onSubmit = (e) => {
@@ -43,12 +60,16 @@ class UserProfile extends Component {
       return;
     }
 
-    if (email === "") {
-      this.setState({ errors: { email: "Email is required" } });
+    if (username === "" || username.includes("@") || username.length <= 8) {
+      this.setState({
+        errors: {
+          username:
+            "Username is required,must not contain @ and length must be greater than 8 letters",
+        },
+      });
       return;
     }
     if (phone === "") {
-      console.log("password");
       this.setState({
         errors: {
           phone: "Phone is required and length must be equal to 10",
@@ -57,18 +78,11 @@ class UserProfile extends Component {
       return;
     }
     if (address === "") {
-      console.log("password2");
       this.setState({ errors: { address: "Address is doesnot match" } });
       return;
     }
     const { id } = this.props.match.params;
-    // this.props.get_token(id);
 
-    // let user = this.props.auth.profile;
-    // user.phone = phone;
-    // user.address = address;
-    // user.photo = photo;
-    // user.bio = bio;
     let form_data = new FormData();
     if (typeof photo === "object") {
       form_data.append("photo", photo, photo.name);
@@ -97,89 +111,120 @@ class UserProfile extends Component {
     e.target.name === "photo"
       ? this.setState({ [e.target.name]: e.target.files[0] })
       : this.setState({ [e.target.name]: e.target.value });
-    console.log(this.state.photo);
   };
 
   render() {
     const { username, email, phone, address, photo, bio, errors } = this.state;
 
     return (
-      <div className="card mb-3">
-        <div className="card-header bg-dark text-white">User Profile</div>
-        <div className="card-body">
-          <form onSubmit={this.onSubmit}>
-            <TextInputGroup
-              label="Username"
-              name="username"
-              placeholder="Enter Name..."
-              value={username}
-              onChange={this.onChange}
-              error={errors.username}
-            />
-            <TextInputGroup
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="Enter Email..."
-              value={email}
-              onChange={this.onChange}
-              error={errors.email}
-            />
-            <div className="form-group">
-              <label htmlFor="profile">Current Profile Pic</label>
-              <br />
-              <img
-                width="100px"
-                height="100px"
-                name="profile"
-                src={`http://127.0.0.1:8000${photo}`}
-                alt={`${photo ? photo.name : "no image"}`}
-              />
+      <React.Fragment>
+        <Helmet>
+          <title>User Profile | E-MEDHUB</title>
+          <meta name="description" content="user profile" />
+        </Helmet>
+        <div
+          className="container d-flex justify-content-center align-items-center"
+          style={{ paddingTop: "8vh" }}
+        >
+          <div
+            className="card mb-3 shadow border border-dark"
+            style={{ width: "70vw" }}
+          >
+            <div
+              className="card-header text-uppercase text-center bg-dark font-weight-bold text-white"
+              style={{ fontSize: "1rem" }}
+            >
+              User Profile
             </div>
-            <div className="custom-file">
-              <input
-                name="photo"
-                type="file"
-                accept="image/png, image/jpeg,image/jpg"
-                onChange={this.onChange}
-                className="custom-file-input"
-              />
-              <label htmlFor="" className="custom-file-label">
-                Choose new profile pic
-              </label>
+            <div className="card-body">
+              <form onSubmit={this.onSubmit}>
+                <TextInputGroup
+                  label="Username"
+                  name="username"
+                  placeholder="Enter Name..."
+                  value={username ? username : ""}
+                  error={errors.username}
+                />
+                <TextInputGroup
+                  label="Email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter Email..."
+                  value={email ? email : ""}
+                  error={errors.email}
+                />
+                <div className="form-group">
+                  <label htmlFor="profile">Current Profile Pic</label>
+                  <br />
+                  <img
+                    width="100px"
+                    height="100px"
+                    name="profile"
+                    src={`http://bibekgupta4444.pythonanywhere.com${
+                      photo ? photo : ""
+                    }`}
+                    alt={`${photo ? photo.name : "no image"}`}
+                  />
+                </div>
+                <div className="custom-file">
+                  {photo
+                    ? document
+                        .getElementById("photo1")
+                        .removeAttribute("required")
+                    : ""}
+                  <input
+                    id="photo1"
+                    name="photo"
+                    type="file"
+                    accept="image/png, image/jpeg,image/jpg"
+                    onChange={this.onChange}
+                    className="custom-file-input"
+                    required
+                  />
+                  <label htmlFor="" className="custom-file-label">
+                    Choose new profile pic
+                  </label>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="">BIO</label>
+                  <textarea
+                    name="bio"
+                    value={bio}
+                    onChange={this.onChange}
+                    className="form-control"
+                    row="4"
+                  ></textarea>
+                </div>
+                <TextInputGroup
+                  label="Phone"
+                  name="phone"
+                  type="text"
+                  placeholder="Enter Phone..."
+                  value={phone}
+                  required="true"
+                  onChange={this.onChange}
+                  error={errors.phone}
+                />
+                <TextInputGroup
+                  label="Address (street,city,country)"
+                  name="address"
+                  type="text"
+                  placeholder="Enter Address..."
+                  value={address || ""}
+                  required="true"
+                  onChange={this.onChange}
+                  error={errors.address}
+                />
+                <input
+                  type="submit"
+                  value="Update Profile"
+                  className="btn btn-primary btn-block"
+                />
+              </form>
             </div>
-            <div className="form-group">
-              <label htmlFor="">BIO</label>
-              <textarea
-                name="bio"
-                value={bio}
-                onChange={this.onChange}
-                className="form-control"
-                row="4"
-              ></textarea>
-            </div>
-            <TextInputGroup
-              label="Phone"
-              name="phone"
-              type="text"
-              placeholder="Enter Phone..."
-              value={phone}
-              onChange={this.onChange}
-              error={errors.phone}
-            />
-            <TextInputGroup
-              label="Address (street,city,country)"
-              name="address"
-              type="text"
-              placeholder="Enter Address..."
-              value={address || ""}
-              onChange={this.onChange}
-              error={errors.address}
-            />
-            <input type="submit" value="SignUp" className="btn btn-block" />
-          </form>
+          </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }
